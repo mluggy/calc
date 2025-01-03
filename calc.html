@@ -1,0 +1,2643 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+  <head>
+    <meta charset="UTF-8" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>מחשבון שכר ברוטו, נטו ו.. טרה</title>
+    <meta
+      name="description"
+      content="חישוב מס הכנסה, ביטוח לאומי, מס בריאות והפרשות, כולל כמה מהברוטו חזר אליך במקרה פרישה, נכות או מוות."
+    />
+    <meta property="og:image" content="calc.png" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      h2 {
+        color: #666;
+        font-size: 1.1rem;
+        font-weight: normal;
+        margin-top: -10px;
+        margin-bottom: 20px;
+      }
+
+      h3 {
+        color: #666;
+        font-size: 1rem;
+        font-weight: normal;
+        margin-top: -10px;
+        margin-bottom: 20px;
+      }
+
+      .gender-selection {
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        margin-bottom: 30px;
+      }
+
+      .marker-style {
+        position: relative;
+        cursor: pointer;
+      }
+
+      .marker-style input[type="radio"] {
+        display: none;
+      }
+
+      .marker-label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 70px;
+        height: 70px;
+        background: #f5f5f5;
+        border-radius: 50px;
+        font-size: 1.8em;
+      }
+
+      .marker-label .emoji {
+        line-height: 1;
+        height: 1em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .marker-label .text {
+        font-size: 0.5em;
+      }
+
+      .marker-style input[type="radio"]:checked + .marker-label {
+        background: #2196f3;
+        color: white;
+      }
+
+      .range-container {
+        margin-bottom: 20px;
+      }
+
+      .range-container label {
+        display: block;
+        margin-bottom: 5px;
+      }
+
+      .range-slider {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+        direction: ltr;
+        transform: scaleX(-1);
+        -webkit-appearance: none;
+        appearance: none;
+        z-index: 2;
+        margin: 0;
+        padding: 0;
+      }
+
+      .range-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+      }
+
+      .range-slider::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+        border: none;
+        cursor: pointer;
+      }
+
+      .range-slider::-webkit-slider-runnable-track {
+        height: 100%;
+        cursor: pointer;
+      }
+
+      .range-slider::-moz-range-track {
+        height: 100%;
+        cursor: pointer;
+      }
+
+      .age-range-container {
+        position: relative;
+        margin: 50px 0;
+        height: 40px;
+        max-width: 95%;
+        margin: 50px auto;
+      }
+
+      .age-markers {
+        position: relative;
+        height: 50%;
+        background: #f5f5f5;
+        border-radius: 4px;
+        touch-action: none;
+      }
+
+      .marker {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        cursor: pointer;
+        transform: translateX(50%);
+        touch-action: none;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+
+      .marker::before {
+        content: attr(data-age);
+        position: absolute;
+        top: -25px;
+        right: 50%;
+        transform: translateX(50%);
+        white-space: nowrap;
+      }
+
+      .marker::after {
+        content: attr(data-label);
+        position: absolute;
+        bottom: -25px;
+        right: 50%;
+        transform: translateX(50%);
+        white-space: nowrap;
+        font-size: 0.9em;
+      }
+
+      .marker.start {
+        background: #4caf50;
+        z-index: 3;
+      }
+
+      .marker.retire {
+        background: #ff9800;
+        z-index: 2;
+      }
+
+      .marker.death {
+        background: #f44336;
+        z-index: 1;
+      }
+
+      h1 {
+        margin-top: 0;
+      }
+
+      small {
+        display: block;
+        font-size: 0.8em;
+        color: #aaa;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: right;
+      }
+
+      th {
+        background-color: #f5f5f5;
+      }
+
+      p {
+        margin: 0.4em 0;
+      }
+
+      .advanced-settings {
+        padding-top: 20px;
+      }
+
+      .advanced-settings summary {
+        cursor: pointer;
+        user-select: none;
+        font-weight: bold;
+        list-style: none;
+      }
+
+      .advanced-settings summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .advanced-settings summary::before {
+        content: "◀";
+        display: inline-block;
+        margin-left: 5px;
+        transition: transform 0.2s;
+      }
+
+      .advanced-settings[open] summary::before {
+        transform: rotate(-90deg);
+      }
+
+      .setting {
+        margin: 15px 0;
+        display: grid;
+        grid-template-columns: 250px 1fr;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .setting label {
+        white-space: nowrap;
+      }
+
+      .setting input[type="range"] {
+        width: 100%;
+      }
+
+      #ageRange {
+        display: none;
+      }
+
+      .slider-container {
+        position: relative;
+        margin: 50px 0;
+        height: 40px;
+        max-width: 95%;
+        margin: 50px auto;
+      }
+
+      .slider-markers {
+        position: relative;
+        height: 50%;
+        background: #f5f5f5;
+        border-radius: 4px;
+      }
+
+      .marker {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        background: #2196f3;
+        border-radius: 50%;
+        transform: translateX(50%);
+        right: 0;
+      }
+
+      .marker::before {
+        content: attr(data-value);
+        position: absolute;
+        top: -25px;
+        right: 50%;
+        transform: translateX(50%);
+        white-space: nowrap;
+      }
+
+      .marker::after {
+        content: attr(data-label);
+        position: absolute;
+        bottom: -25px;
+        right: 50%;
+        transform: translateX(50%);
+        white-space: nowrap;
+        font-size: 0.9em;
+      }
+
+      .marker.start::before,
+      .marker.retire::before,
+      .marker.death::before {
+        content: attr(data-age);
+        position: absolute;
+        top: -25px;
+        right: 50%;
+        transform: translateX(50%);
+        white-space: nowrap;
+      }
+
+      .marker.start::after,
+      .marker.retire::after,
+      .marker.death::after {
+        content: attr(data-label);
+        position: absolute;
+        bottom: -25px;
+        right: 50%;
+        transform: translateX(50%);
+        white-space: nowrap;
+        font-size: 0.9em;
+      }
+
+      .advanced-options select {
+        margin-bottom: 10px;
+        padding: 5px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        width: 200px;
+      }
+
+      .setting select {
+        padding: 5px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        background-color: white;
+        margin-right: 10px;
+        width: 150px;
+      }
+
+      footer {
+        margin-top: 40px;
+        padding: 20px 0;
+        text-align: center;
+        color: #585858;
+      }
+
+      @media screen and (max-width: 768px) {
+        h1 {
+          font-size: 1.6em;
+        }
+
+        .setting select {
+          width: 120px;
+          font-size: 0.8em;
+        }
+
+        .advanced-options select {
+          width: 160px;
+          font-size: 0.8em;
+        }
+
+        table tbody td {
+          font-size: 0.8em;
+          padding: 6px;
+        }
+
+        .salary-insights,
+        .retirement-insights,
+        .death-insights {
+          font-size: 0.8em;
+        }
+
+        .setting {
+          grid-template-columns: 1fr;
+          gap: 5px;
+        }
+
+        .setting:has(select) {
+          grid-template-columns: 250px 1fr;
+          gap: 10px;
+        }
+
+        .setting input[type="range"] {
+          margin: 10px 0;
+        }
+
+        .setting .value {
+          text-align: left;
+        }
+
+        .settings-container {
+          font-size: 0.8em;
+        }
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --insights-bg: #333;
+        }
+
+        body {
+          background-color: #1a1a1a;
+          color: #e0e0e0;
+        }
+
+        h1,
+        h2,
+        h3 {
+          color: #999;
+        }
+
+        .marker-label {
+          background: #333;
+          color: #e0e0e0;
+        }
+
+        .marker-style input[type="radio"]:checked + .marker-label {
+          background: #1976d2;
+          color: white;
+        }
+
+        .age-markers,
+        .slider-markers {
+          background: #333;
+        }
+
+        table th {
+          background-color: #333;
+          color: #e0e0e0;
+          border-color: #444;
+        }
+
+        table td {
+          border-color: #444;
+        }
+
+        .salary-insights,
+        .retirement-insights,
+        .death-insights {
+          background-color: #333;
+          color: #e0e0e0;
+        }
+
+        .setting select {
+          background-color: #333;
+          color: #e0e0e0;
+          border-color: #444;
+        }
+
+        .setting input[type="range"] {
+          background-color: #333;
+        }
+
+        .setting input[type="range"]::-webkit-slider-runnable-track {
+          background-color: #444;
+        }
+
+        .setting input[type="range"]::-moz-range-track {
+          background-color: #444;
+        }
+
+        .setting input[type="range"]::-webkit-slider-thumb {
+          background-color: #1976d2;
+        }
+
+        .setting input[type="range"]::-moz-range-thumb {
+          background-color: #1976d2;
+        }
+
+        footer {
+          color: #888;
+        }
+
+        footer a {
+          color: #64b5f6;
+        }
+
+        footer a:hover {
+          color: #90caf9;
+        }
+
+        .export-button {
+          background: #1976d2;
+        }
+        .export-button:hover {
+          background: #1565c0;
+        }
+      }
+
+      .marker[data-value]::before {
+        display: none;
+      }
+
+      .marker input[type="text"] {
+        position: absolute;
+        top: -30px;
+        right: 50%;
+        transform: translateX(50%);
+        width: 60px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        padding: 2px 4px;
+        text-align: center;
+        font-size: 1em;
+        background: transparent;
+        color: inherit;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .marker input[type="text"] {
+          border-color: rgba(255, 255, 255, 0.1);
+        }
+      }
+
+      .setting-input-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .setting input[type="text"] {
+        width: 100px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        padding: 2px 4px;
+        text-align: center;
+        font-size: 1em;
+        background: transparent;
+        color: inherit;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .setting input[type="text"] {
+          border-color: rgba(255, 255, 255, 0.1);
+        }
+      }
+
+      .export-buttons {
+        display: flex;
+        justify-content: flex-start;
+        gap: 10px;
+        margin: 20px 0;
+        direction: rtl;
+      }
+
+      .export-button {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        background: #2196f3;
+        color: white;
+        cursor: pointer;
+        font-size: 1em;
+      }
+
+      .export-button:hover {
+        background: #1976d2;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .export-button {
+          background: #1976d2;
+        }
+        .export-button:hover {
+          background: #1565c0;
+        }
+      }
+    </style>
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-6SVQKDG0VJ"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+      gtag("config", "G-6SVQKDG0VJ");
+
+      const sentEvents = new Set();
+
+      function trackEvent(action) {
+        const snakeAction = action
+          .replace(/([A-Z])/g, "_$1")
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "_")
+          .replace(/^_+|_+$/g, "");
+
+        if (!sentEvents.has(snakeAction)) {
+          sentEvents.add(snakeAction);
+          gtag("event", snakeAction);
+        }
+      }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  </head>
+  <body>
+    <h1>מחשבון שכר ברוטו, נטו ו.. טרה</h1>
+    <h2>
+      חישוב מס הכנסה, ביטוח לאומי, מס בריאות והפרשות, כולל כמה מהברוטו חזר אליך
+      או לשארים במקרה פרישה, נכות או מוות.
+    </h2>
+    <h3>
+      הסכומים המוצגים מוצעו לכל אורך התקופה ועשויים להיות שונים מאלו שיתקבלו
+      בפועל.
+    </h3>
+
+    <div class="gender-selection">
+      <label class="marker-style">
+        <input type="radio" name="gender" value="man" checked />
+        <span class="marker-label">
+          <span class="emoji">👨</span>
+          <span class="text">איש</span>
+        </span>
+      </label>
+      <label class="marker-style">
+        <input type="radio" name="gender" value="woman" />
+        <span class="marker-label">
+          <span class="emoji">👩</span>
+          <span class="text">אישה</span>
+        </span>
+      </label>
+    </div>
+
+    <div class="slider-container">
+      <div class="slider-markers">
+        <input
+          type="range"
+          class="range-slider"
+          id="childrenRange"
+          min="0"
+          max="10"
+          value="0"
+          tabindex="-1"
+        />
+        <div class="marker" data-label="ילדים">
+          <input id="children" type="text" value="0" />
+        </div>
+      </div>
+    </div>
+
+    <div class="slider-container">
+      <div class="slider-markers">
+        <input
+          type="range"
+          class="range-slider"
+          id="salaryRange"
+          min="5880"
+          max="100000"
+          value="12536"
+          tabindex="-1"
+        />
+        <div class="marker" data-label="שכר חודשי ₪">
+          <input id="salary" type="text" value="12,536" />
+        </div>
+      </div>
+    </div>
+
+    <div class="age-range-container">
+      <div class="age-markers">
+        <input
+          type="range"
+          class="range-slider"
+          id="ageStartRange"
+          min="18"
+          max="100"
+          value="20"
+          tabindex="-1"
+        />
+        <input
+          type="range"
+          class="range-slider"
+          id="ageRetireRange"
+          min="18"
+          max="100"
+          value="67"
+          tabindex="-1"
+        />
+        <input
+          type="range"
+          class="range-slider"
+          id="ageDeathRange"
+          min="18"
+          max="100"
+          value="81"
+          tabindex="-1"
+        />
+        <div class="marker start" data-age="20" data-label="התחלה"></div>
+        <div class="marker retire" data-age="67" data-label="פרישה"></div>
+        <div class="marker death" data-age="81" data-label="מוות"></div>
+      </div>
+    </div>
+
+    <table id="salaryTable">
+      <thead>
+        <tr>
+          <th>תלוש השכר שלך</th>
+          <th>חודשי</th>
+          <th>שנתי</th>
+          <th>עד הפרישה</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Will be filled dynamically -->
+      </tbody>
+    </table>
+
+    <table id="retirementTable">
+      <thead>
+        <tr>
+          <th>בפרישה</th>
+          <th>חד פעמי</th>
+          <th>חודשי</th>
+          <th>שנתי</th>
+          <th>עד המוות</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Will be filled dynamically -->
+      </tbody>
+    </table>
+
+    <table id="deathTable">
+      <thead>
+        <tr>
+          <th>בפטירה</th>
+          <th>חודשי</th>
+          <th>שנתי</th>
+          <th>עד מות בן/בת הזוג</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Will be filled dynamically -->
+      </tbody>
+    </table>
+
+    <details class="advanced-settings">
+      <summary>הגדרות מתקדמות</summary>
+      <div class="settings-content">
+        <div class="setting">
+          <label>הפרשות לפנסיה</label>
+          <select id="pensionType" class="form-control">
+            <option value="regular">עד התקרה</option>
+            <option value="above">מעל התקרה</option>
+          </select>
+        </div>
+        <div class="setting">
+          <label>הפרשות לקרן השתלמות</label>
+          <select id="gemelType" class="form-control">
+            <option value="regular">עד התקרה</option>
+            <option value="above">מעל התקרה</option>
+            <option value="none">לא</option>
+          </select>
+        </div>
+        <div class="setting">
+          <label>משיכת פיצויים</label>
+          <select id="pensionCompensationType" class="form-control">
+            <option value="regular">כקצבה</option>
+            <option value="onetime">כסכום חד-פעמי</option>
+          </select>
+        </div>
+        <div class="setting">
+          <label>נכות בפרישה</label>
+          <select id="disabilityType" class="form-control">
+            <option value="none">לא</option>
+            <option value="25">חלקית 25%</option>
+            <option value="50">חלקית 50%</option>
+            <option value="60">חלקית 60%</option>
+            <option value="65">חלקית 65%</option>
+            <option value="74">חלקית 74%</option>
+            <option value="75">חלקית 75%</option>
+            <option value="100">מלאה 100%</option>
+          </select>
+        </div>
+        <div class="setting">
+          <label>יישוב מזכה</label>
+          <select id="preferredSettlement" class="form-control">
+            <option value="none">לא</option>
+            <option value="146640-7">7% עד 146,640</option>
+            <option value="180000-10">10% עד 180,000</option>
+            <option value="186000-12">12% עד 186,000</option>
+            <option value="186600-12">12% עד 186,600</option>
+            <option value="213240-12">12% עד 213,240</option>
+            <option value="226560-12">12% עד 226,560</option>
+            <option value="219960-14">14% עד 219,960</option>
+            <option value="259920-14">14% עד 259,920</option>
+            <option value="213240-16">16% עד 213,240</option>
+            <option value="226560-16">16% עד 226,560</option>
+            <option value="259920-18">18% עד 259,920</option>
+            <option value="259920-20">20% עד 259,920</option>
+            <option value="267840-20">20% עד 267,840</option>
+          </select>
+        </div>
+        <div class="setting">
+          <label>יתרה נוכחית בפנסיה</label>
+          <div class="setting-input-container">
+            <input
+              type="range"
+              id="pensionCurrent"
+              min="0"
+              max="10000000"
+              value="0"
+              step="1000"
+              tabindex="-1"
+            />
+            <input id="settings_pension_current" type="text" value="0" />
+          </div>
+        </div>
+        <div class="setting">
+          <label>יתרה נוכחית בקרן השתלמות</label>
+          <div class="setting-input-container">
+            <input
+              type="range"
+              id="gemelCurrent"
+              min="0"
+              max="10000000"
+              value="0"
+              step="1000"
+              tabindex="-1"
+            />
+            <input id="settings_gemel_current" type="text" value="0" />
+          </div>
+        </div>
+        <div class="setting">
+          <label>נקודות זיכוי נוספות</label>
+          <div class="setting-input-container">
+            <input
+              type="range"
+              id="pointsAdditionalYear"
+              min="0"
+              max="50"
+              value="0"
+              step="0.25"
+              tabindex="-1"
+            />
+            <input id="settings_points_additional_year" type="text" value="0" />
+          </div>
+        </div>
+        <div class="setting">
+          <label>מקדם המרה לקצבה</label>
+          <div class="setting-input-container">
+            <input
+              type="range"
+              id="pensionMekadem"
+              min="100"
+              max="300"
+              value="186"
+              step="1"
+              tabindex="-1"
+            />
+            <input id="settings_pension_mekadem" type="text" value="186" />
+          </div>
+        </div>
+        <div class="setting">
+          <label>תשואה שנתית בפנסיה מקיפה</label>
+          <div class="setting-input-container">
+            <input
+              type="range"
+              id="pensionRoi"
+              min="0"
+              max="30"
+              value="5"
+              step="0.01"
+              tabindex="-1"
+            />
+            <input id="settings_pension_roi" type="text" value="5%" />
+          </div>
+        </div>
+        <div class="setting">
+          <label>דמי ניהול מצבירה בפנסיה מקיפה</label>
+          <div class="setting-input-container">
+            <input
+              type="range"
+              id="pensionBalanceFee"
+              min="0"
+              max="0.5"
+              value="0.1"
+              step="0.01"
+              tabindex="-1"
+            />
+            <input id="settings_pension_balance_fee" type="text" value="0.1%" />
+          </div>
+        </div>
+        <div class="setting">
+          <label>דמי ניהול מהפקדה בפנסיה מקיפה</label>
+          <div class="setting-input-container">
+            <input
+              type="range"
+              id="pensionDepositFee"
+              min="0"
+              max="6"
+              value="1.49"
+              step="0.01"
+              tabindex="-1"
+            />
+            <input
+              id="settings_pension_deposit_fee"
+              type="text"
+              value="1.49%"
+            />
+          </div>
+        </div>
+        <div class="setting">
+          <label>תשואה שנתית בפנסיה כללית</label>
+          <div class="setting-input-container">
+            <input
+              type="range"
+              id="pensionGeneralRoi"
+              min="0"
+              max="30"
+              value="5"
+              step="0.01"
+              tabindex="-1"
+            />
+            <input id="settings_pension_general_roi" type="text" value="5%" />
+          </div>
+        </div>
+        <div class="setting">
+          <label>דמי ניהול מצבירה בפנסיה כללית</label>
+          <div class="setting-input-container">
+            <input
+              type="range"
+              id="pensionGeneralBalanceFee"
+              min="0"
+              max="0.5"
+              value="0.5"
+              step="0.01"
+              tabindex="-1"
+            />
+            <input
+              id="settings_pension_general_balance_fee"
+              type="text"
+              value="0.5%"
+            />
+          </div>
+        </div>
+        <div class="setting">
+          <label>דמי ניהול מהפקדה בפנסיה כללית</label>
+          <div class="setting-input-container">
+            <input
+              type="range"
+              id="pensionGeneralDepositFee"
+              min="0"
+              max="4"
+              value="1.05"
+              step="0.01"
+              tabindex="-1"
+            />
+            <input
+              id="settings_pension_general_deposit_fee"
+              type="text"
+              value="1.05%"
+            />
+          </div>
+        </div>
+        <div class="setting">
+          <label>תשואה שנתית בקרן השתלמות</label>
+          <div class="setting-input-container">
+            <input
+              type="range"
+              id="gemelRoi"
+              min="0"
+              max="30"
+              value="5"
+              step="0.01"
+              tabindex="-1"
+            />
+            <input id="settings_gemel_roi" type="text" value="5%" />
+          </div>
+        </div>
+        <div class="setting">
+          <label>דמי ניהול מצבירה בקרן השתלמות</label>
+          <div class="setting-input-container">
+            <input
+              type="range"
+              id="gemelBalanceFee"
+              min="0"
+              max="2"
+              value="0.8"
+              step="0.01"
+              tabindex="-1"
+            />
+            <input id="settings_gemel_balance_fee" type="text" value="0.8%" />
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <div class="export-buttons">
+      <button class="export-button" onclick="exportToPNG()">
+        🖼️ שמירה כתמונה
+      </button>
+    </div>
+
+    <script>
+      const settings = {
+        man: {
+          ageRetire: 67,
+          ageDeath: 81,
+          pointsYear: 2.25,
+          pensionMekadem: 186,
+        },
+        woman: {
+          ageRetire: 65,
+          ageDeath: 84,
+          pointsYear: 2.75,
+          pensionMekadem: 202,
+        },
+        salaryAverageMonth: 12536,
+        pointValue: 2904,
+        pensionSalaryYearMaxPercentage: 0.07,
+        pensionCreditMaxYear: 8148,
+        pensionCreditPercentage: 0.35,
+        pensionDeductionEmployee: 0.06,
+        pensionDeductionEmployer: 0.065,
+        pensionDeductionEmployerMaxMonth: 2351,
+        pensionDeductionEmployerCompensation: 0.0833,
+        pensionCompensationMaxMonth: 3458,
+        pensionCompensationAboveTax: 0.15,
+        gemelDeductionEmployee: 0.025,
+        gemelDeductionEmployer: 0.075,
+        gemelMax: 4713.6,
+        gemelMinYears: 6,
+        gemelMinRetirementYears: 3,
+        capitalGainsTax: 0.25,
+        btlZiknaAge: 70,
+        btlHealthZikna: 223,
+        taxYearTiers: [
+          { limit: 84120, rate: 0.1 },
+          { limit: 120720, rate: 0.14 },
+          { limit: 193800, rate: 0.2 },
+          { limit: 269280, rate: 0.31 },
+          { limit: 560280, rate: 0.35 },
+          { limit: 721560, rate: 0.47 },
+          { limit: Infinity, rate: 0.5 },
+        ],
+        btlTiers: [
+          { limit: 7522, btl: 0.004, health: 0.031 },
+          { limit: 49030, btl: 0.07, health: 0.05 },
+        ],
+        childPoints: [
+          { limit: 0, points: 2.5 },
+          { limit: 2, points: 4.5 },
+          { limit: 3, points: 3.5 },
+          { limit: 5, points: 2.5 },
+          { limit: 17, points: 1 },
+          { limit: 18, points: 0 },
+        ],
+        ziknaTiers: [
+          { limit: 80, amount: 1736 },
+          { limit: Infinity, amount: 1834 },
+        ],
+        havraaValue: 418,
+        havraaTiers: [
+          { limit: 1, days: 5 },
+          { limit: 3, days: 6 },
+          { limit: 10, days: 7 },
+          { limit: 15, days: 8 },
+          { limit: 19, days: 9 },
+          { limit: Infinity, days: 10 },
+        ],
+        childrenTiers: [
+          { child: 1, amount: 169 },
+          { child: 4, amount: 214 },
+          { limit: Infinity, amount: 169 },
+        ],
+        btlDisabilityTiers: [
+          { percentage: 60, amount: 2476 },
+          { percentage: 65, amount: 2636 },
+          { percentage: 74, amount: 2925 },
+          { percentage: 75, amount: 4291 },
+          { percentage: 100, amount: 4291 },
+        ],
+        pensionDeathSpousePercentage: 0.5,
+        pensionDeathChildrenPercentage: 0.5,
+        pensionDeathTiers: [
+          { age: 46, percentage: 1.0 },
+          { age: 47, percentage: 0.99 },
+          { age: 48, percentage: 0.955 },
+          { age: 49, percentage: 0.905 },
+          { age: 50, percentage: 0.855 },
+          { age: 51, percentage: 0.815 },
+          { age: 52, percentage: 0.775 },
+          { age: 53, percentage: 0.735 },
+          { age: 54, percentage: 0.695 },
+          { age: 55, percentage: 0.655 },
+          { age: 56, percentage: 0.615 },
+          { age: 57, percentage: 0.575 },
+          { age: 58, percentage: 0.535 },
+        ],
+        btlDeathNoChildrenTiers: [
+          { age: 49, amount: 1304 },
+          { age: 79, amount: 1736 },
+          { age: Infinity, amount: 1834 },
+        ],
+        btlDeathChildrenTiers: [
+          { child: 1, amount: 2550 },
+          { child: 2, amount: 3364 },
+          { limit: Infinity, amount: 814 },
+        ],
+      };
+
+      function updateAgeMarkers() {
+        const startSlider = document.getElementById("ageStartRange");
+        const retireSlider = document.getElementById("ageRetireRange");
+        const deathSlider = document.getElementById("ageDeathRange");
+
+        if (parseInt(startSlider.value) >= parseInt(retireSlider.value)) {
+          startSlider.value = parseInt(retireSlider.value) - 1;
+        }
+        if (parseInt(retireSlider.value) >= parseInt(deathSlider.value)) {
+          retireSlider.value = parseInt(deathSlider.value) - 1;
+        }
+        if (parseInt(retireSlider.value) <= parseInt(startSlider.value)) {
+          retireSlider.value = parseInt(startSlider.value) + 1;
+        }
+        if (parseInt(deathSlider.value) <= parseInt(retireSlider.value)) {
+          deathSlider.value = parseInt(retireSlider.value) + 1;
+        }
+
+        const container = document.querySelector(".age-markers");
+        const width = container.offsetWidth;
+        const ageSpan = startSlider.max - startSlider.min;
+
+        const startPercent =
+          ((startSlider.value - startSlider.min) / ageSpan) * width;
+        const retirePercent =
+          ((retireSlider.value - retireSlider.min) / ageSpan) * width;
+        const deathPercent =
+          ((deathSlider.value - deathSlider.min) / ageSpan) * width;
+
+        const startMarker = document.querySelector(".marker.start");
+        const retireMarker = document.querySelector(".marker.retire");
+        const deathMarker = document.querySelector(".marker.death");
+
+        startMarker.style.right = `${startPercent}px`;
+        retireMarker.style.right = `${retirePercent}px`;
+        deathMarker.style.right = `${deathPercent}px`;
+
+        startMarker.setAttribute("data-age", startSlider.value);
+        retireMarker.setAttribute("data-age", retireSlider.value);
+        deathMarker.setAttribute("data-age", deathSlider.value);
+      }
+
+      function updateSliderMarker(slider, marker) {
+        const container = slider.closest(".slider-markers");
+        const width = container.offsetWidth;
+        const range = slider.max - slider.min;
+        const position = ((slider.value - slider.min) / range) * width;
+
+        marker.style.right = `${position}px`;
+
+        const displayValue =
+          slider.id === "salaryRange"
+            ? parseInt(slider.value).toLocaleString("he-IL")
+            : slider.value;
+        marker.setAttribute("data-value", displayValue);
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const ageRanges = {
+          start: document.getElementById("ageStartRange"),
+          retire: document.getElementById("ageRetireRange"),
+          death: document.getElementById("ageDeathRange"),
+        };
+
+        const markers = {
+          start: document.querySelector(".marker.start"),
+          retire: document.querySelector(".marker.retire"),
+          death: document.querySelector(".marker.death"),
+        };
+
+        let activeMarker = null;
+        let startX = 0;
+        let ageStart = 0;
+
+        let hasManuallyAdjustedAges = false;
+        let hasManuallyAdjustedMekadem = false;
+        document.querySelectorAll('input[name="gender"]').forEach((radio) => {
+          radio.addEventListener("change", (e) => {
+            trackEvent("gender_click");
+            const gender = e.target.value;
+
+            if (!hasManuallyAdjustedAges) {
+              const retireSlider = document.getElementById("ageRetireRange");
+              const deathSlider = document.getElementById("ageDeathRange");
+
+              retireSlider.value = settings[gender].ageRetire;
+              deathSlider.value = settings[gender].ageDeath;
+              updateAgeMarkers();
+            }
+
+            if (!hasManuallyAdjustedMekadem) {
+              const pensionMekademSlider =
+                document.getElementById("pensionMekadem");
+              pensionMekademSlider.value = settings[gender].pensionMekadem;
+              pensionMekademSlider.nextElementSibling.textContent =
+                settings[gender].pensionMekadem;
+            }
+
+            updateCalculations();
+          });
+        });
+
+        Object.entries(ageRanges).forEach(([type, range]) => {
+          range.addEventListener("input", (e) => {
+            if (type === "death") {
+              trackEvent("age_death_drag");
+            }
+
+            if (type === "retire" || type === "death") {
+              hasManuallyAdjustedAges = true;
+            }
+            updateAgeMarkers();
+            updateCalculations();
+          });
+        });
+
+        Object.entries(markers).forEach(([type, marker]) => {
+          marker.addEventListener("mousedown", startDrag);
+          marker.addEventListener("touchstart", startDrag);
+
+          function startDrag(e) {
+            e.preventDefault();
+            activeMarker = type;
+            startX = e.type === "mousedown" ? e.clientX : e.touches[0].clientX;
+            ageStart = parseInt(ageRanges[type].value);
+          }
+        });
+
+        document.addEventListener("mousemove", handleDrag);
+        document.addEventListener("touchmove", handleDrag);
+
+        function handleDrag(e) {
+          if (!activeMarker) return;
+
+          if (activeMarker === "retire" || activeMarker === "death") {
+            hasManuallyAdjustedAges = true;
+          }
+
+          e.preventDefault();
+          const container = document.querySelector(".age-markers");
+          const rect = container.getBoundingClientRect();
+          const width = rect.width;
+          const ageSpan =
+            ageRanges[activeMarker].max - ageRanges[activeMarker].min;
+
+          const currentX =
+            e.type === "mousemove" ? e.clientX : e.touches[0].clientX;
+          const dx = startX - currentX;
+          const dAge = Math.round((dx / width) * ageSpan);
+          let newAge = ageStart + dAge;
+
+          newAge = Math.max(
+            parseInt(ageRanges[activeMarker].min),
+            Math.min(parseInt(ageRanges[activeMarker].max), newAge)
+          );
+
+          const startValue = parseInt(ageRanges.start.value);
+          const retireValue = parseInt(ageRanges.retire.value);
+          const deathValue = parseInt(ageRanges.death.value);
+
+          if (
+            (activeMarker === "start" && newAge < retireValue) ||
+            (activeMarker === "retire" &&
+              newAge > startValue &&
+              newAge < deathValue) ||
+            (activeMarker === "death" && newAge > retireValue)
+          ) {
+            ageRanges[activeMarker].value = newAge;
+            const marker = document.querySelector(`.marker.${activeMarker}`);
+            marker.setAttribute("data-age", newAge);
+            marker.style.right = `${
+              ((newAge - ageRanges[activeMarker].min) / ageSpan) * width
+            }px`;
+            updateCalculations();
+          }
+        }
+
+        document.addEventListener("mouseup", endDrag);
+        document.addEventListener("touchend", endDrag);
+        document.addEventListener("touchcancel", endDrag);
+
+        function endDrag() {
+          if (activeMarker === "start") {
+            trackEvent("age_start_drag");
+          } else if (activeMarker === "retire") {
+            trackEvent("age_retire_drag");
+          }
+
+          activeMarker = null;
+        }
+
+        updateAgeMarkers();
+        updateCalculations();
+
+        const childrenSlider = document.getElementById("childrenRange");
+        const salarySlider = document.getElementById("salaryRange");
+        const childrenMarker = childrenSlider.nextElementSibling;
+        const salaryMarker = salarySlider.nextElementSibling;
+
+        childrenSlider.addEventListener("input", () => {
+          trackEvent("children_drag");
+          updateSliderMarker(childrenSlider, childrenMarker);
+          updateCalculations();
+        });
+
+        salarySlider.addEventListener("input", () => {
+          trackEvent("salary_drag");
+          updateSliderMarker(salarySlider, salaryMarker);
+          updateCalculations();
+        });
+
+        updateSliderMarker(childrenSlider, childrenMarker);
+        updateSliderMarker(salarySlider, salaryMarker);
+
+        const advancedSettings = document.querySelectorAll(
+          '.setting input[type="range"]'
+        );
+        advancedSettings.forEach((slider) => {
+          const valueLabel = slider.nextElementSibling;
+
+          slider.addEventListener("input", () => {
+            if (slider.id === "pensionMekadem") {
+              hasManuallyAdjustedMekadem = true;
+              valueLabel.textContent = slider.value;
+            } else if (slider.id === "pointsAdditionalYear") {
+              valueLabel.textContent = slider.value;
+            } else {
+              valueLabel.textContent = `${slider.value}%`;
+            }
+
+            trackEvent(`settings_${slider.id}_drag`);
+
+            updateCalculations();
+          });
+
+          if (["pensionMekadem", "pointsAdditionalYear"].includes(slider.id)) {
+            valueLabel.textContent = slider.value;
+          } else {
+            valueLabel.textContent = `${slider.value}%`;
+          }
+        });
+
+        const selectBoxes = document.querySelectorAll(".setting select");
+        selectBoxes.forEach((select) => {
+          select.addEventListener("change", (e) => {
+            trackEvent(`settings_${e.target.id}_select`);
+            updateCalculations();
+          });
+        });
+      });
+
+      function updateMarkerPosition(slider, marker) {
+        const percent =
+          ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+        marker.style.right = `${percent}%`;
+
+        const input = marker.querySelector('input[type="text"]');
+        if (input) {
+          const value =
+            slider.id === "salaryRange"
+              ? parseInt(slider.value).toLocaleString("he-IL")
+              : slider.value;
+          input.value = value;
+        }
+      }
+
+      function calculateFutureValue({
+        currentBalance = 0,
+        monthlyDeposit = 0,
+        yearlyRoi = 0,
+        balanceFee = 0,
+        depositFee = 0,
+        years = 0,
+      }) {
+        const months = years * 12;
+        const monthlyRate = Math.pow(1 + yearlyRoi, 1 / 12) - 1;
+        const effectiveMonthlyRate = monthlyRate - balanceFee / 12;
+        const netMonthlyDeposit = monthlyDeposit * (1 - depositFee);
+
+        const futureBalance =
+          currentBalance * Math.pow(1 + effectiveMonthlyRate, months);
+        const futureDeposits =
+          netMonthlyDeposit *
+          ((Math.pow(1 + effectiveMonthlyRate, months) - 1) /
+            effectiveMonthlyRate);
+
+        console.log(
+          {
+            currentBalance,
+            monthlyDeposit,
+            yearlyRoi,
+            balanceFee,
+            depositFee,
+            years,
+          },
+          {
+            months,
+            monthlyRate,
+            effectiveMonthlyRate,
+            netMonthlyDeposit,
+            futureBalance,
+            futureDeposits,
+          }
+        );
+        return futureBalance + futureDeposits;
+      }
+
+      function updateCalculations() {
+        const gender = document.querySelector(
+          'input[name="gender"]:checked'
+        ).value;
+        const children = parseInt(
+          document.getElementById("childrenRange").value
+        );
+        const salaryMonth = parseInt(
+          document.getElementById("salaryRange").value
+        );
+        const ageStart = parseInt(
+          document.getElementById("ageStartRange").value
+        );
+        const ageRetire = parseInt(
+          document.getElementById("ageRetireRange").value
+        );
+        const ageDeath = parseInt(
+          document.getElementById("ageDeathRange").value
+        );
+        const pensionType = document.getElementById("pensionType").value;
+        const gemelType = document.getElementById("gemelType").value;
+        const pensionCompensationType = document.getElementById(
+          "pensionCompensationType"
+        ).value;
+
+        const pensionCurrent = parseInt(
+          document.getElementById("pensionCurrent").value || 0
+        );
+        const gemelCurrent = parseInt(
+          document.getElementById("gemelCurrent").value || 0
+        );
+
+        const pointsAdditionalYear = parseFloat(
+          document.getElementById("pointsAdditionalYear").value
+        );
+        const pensionMekadem = parseInt(
+          document.getElementById("pensionMekadem").value
+        );
+        const preferredSettlement = document.getElementById(
+          "preferredSettlement"
+        ).value;
+        const pensionRoi =
+          parseFloat(document.getElementById("pensionRoi").value) / 100;
+        const pensionBalanceFee =
+          parseFloat(document.getElementById("pensionBalanceFee").value) / 100;
+        const pensionDepositFee =
+          parseFloat(document.getElementById("pensionDepositFee").value) / 100;
+        const pensionGeneralRoi =
+          parseFloat(document.getElementById("pensionGeneralRoi").value) / 100;
+        const pensionGeneralBalanceFee =
+          parseFloat(
+            document.getElementById("pensionGeneralBalanceFee").value
+          ) / 100;
+        const pensionGeneralDepositFee =
+          parseFloat(
+            document.getElementById("pensionGeneralDepositFee").value
+          ) / 100;
+        const gemelRoi =
+          parseFloat(document.getElementById("gemelRoi").value) / 100;
+        const gemelBalanceFee =
+          parseFloat(document.getElementById("gemelBalanceFee").value) / 100;
+        const disabilityType = document.getElementById("disabilityType").value;
+
+        const pointsYear =
+          gender === "man"
+            ? settings.man.pointsYear
+            : settings.woman.pointsYear;
+
+        const yearsWorking = ageRetire - ageStart;
+        const yearsRetirement = ageDeath - ageRetire;
+        const salaryYear = salaryMonth * 12;
+
+        let havraaDays = 0;
+        for (let year = 1; year <= yearsWorking; year++) {
+          const tier = settings.havraaTiers.find((t) => year <= t.limit);
+          havraaDays += tier.days;
+        }
+        const havraaTotal = havraaDays * settings.havraaValue;
+        const havraaMonth = havraaTotal / yearsWorking / 12;
+        const havraaMin = settings.havraaTiers[0].days * settings.havraaValue;
+        const havraaMax =
+          settings.havraaTiers[settings.havraaTiers.length - 1].days *
+          settings.havraaValue;
+
+        const pensionEmployeeMonth =
+          (pensionType === "above"
+            ? salaryMonth
+            : Math.min(salaryMonth, settings.salaryAverageMonth)) *
+          settings.pensionDeductionEmployee;
+
+        const pensionEmployerAboveMonth =
+          pensionType === "above"
+            ? Math.max(
+                0,
+                salaryMonth * settings.pensionDeductionEmployer -
+                  settings.pensionDeductionEmployerMaxMonth
+              )
+            : 0;
+
+        const pensionCompensationAboveYear =
+          pensionType === "above"
+            ? Math.max(
+                0,
+                salaryMonth *
+                  12 *
+                  settings.pensionDeductionEmployerCompensation -
+                  12 * settings.pensionCompensationMaxMonth
+              )
+            : 0;
+
+        const gemelEmployeeMonth =
+          gemelType === "none"
+            ? 0
+            : gemelType === "above"
+            ? salaryMonth * settings.gemelDeductionEmployee
+            : Math.min(
+                salaryMonth * settings.gemelDeductionEmployee,
+                settings.gemelMax / 12
+              );
+
+        const gemelEmployerMonth =
+          gemelType === "none"
+            ? 0
+            : gemelType === "above"
+            ? salaryMonth * settings.gemelDeductionEmployer
+            : Math.min(
+                salaryMonth * settings.gemelDeductionEmployer,
+                (settings.gemelMax / 12) * 3
+              );
+
+        const gemelEmployerAboveMonth =
+          gemelType === "above"
+            ? Math.max(0, salaryMonth - settings.salaryAverageMonth) *
+              settings.gemelDeductionEmployer
+            : 0;
+
+        let taxYear = 0;
+        let remainingSalary =
+          salaryYear +
+          pensionEmployerAboveMonth * 12 +
+          pensionCompensationAboveYear +
+          gemelEmployerAboveMonth * 12;
+        let previousLimit = 0;
+
+        for (const tier of settings.taxYearTiers) {
+          const taxableInThisTier = Math.min(
+            remainingSalary,
+            tier.limit - previousLimit
+          );
+          taxYear += taxableInThisTier * tier.rate;
+          remainingSalary -= taxableInThisTier;
+          if (remainingSalary <= 0) break;
+          previousLimit = tier.limit;
+        }
+
+        const pensionCreditYear =
+          Math.min(pensionEmployeeMonth * 12, settings.pensionCreditMaxYear) *
+          settings.pensionCreditPercentage;
+
+        let settlementCreditYear = 0;
+        if (preferredSettlement !== "none") {
+          const [amount, percentage] = preferredSettlement.split("-");
+          const preferredAmount = parseFloat(amount);
+          const preferredPercentage = parseFloat(percentage) / 100;
+
+          settlementCreditYear = preferredAmount * preferredPercentage;
+        }
+
+        let pointsChildrenTotal = 0;
+        let btlChildrenTotal = 0;
+        let yearsBetweenChildren = 0;
+        if (children > 0) {
+          const maxChildrenAge =
+            Math.min(40, ageDeath) - Math.min(40, ageStart);
+          yearsBetweenChildren = Math.max(1, maxChildrenAge / children);
+
+          for (let year = ageStart; year <= ageRetire; year++) {
+            for (let i = 0; i < children; i++) {
+              const childBirthYear = ageStart + i * yearsBetweenChildren;
+              const childAge = year - childBirthYear;
+
+              if (childAge < 0) continue;
+
+              for (const ageGroup of settings.childPoints) {
+                if (childAge <= ageGroup.limit) {
+                  pointsChildrenTotal += ageGroup.points;
+                  break;
+                }
+              }
+
+              if (childAge < 18 && year <= ageDeath) {
+                const tier =
+                  settings.childrenTiers.find((t) => i + 1 <= t.child) ||
+                  settings.childrenTiers[settings.childrenTiers.length - 1];
+                btlChildrenTotal += tier.amount * 12;
+              }
+            }
+          }
+        }
+        const pointsChildrenYear = pointsChildrenTotal / yearsWorking;
+
+        const taxCreditYear = Math.min(
+          (pointsYear + pointsChildrenYear + pointsAdditionalYear) *
+            settings.pointValue +
+            pensionCreditYear +
+            settlementCreditYear,
+          taxYear
+        );
+
+        const taxCreditTotal = taxCreditYear * yearsWorking;
+
+        const taxMonth = (taxYear - taxCreditYear) / 12;
+
+        let btlMonth = 0;
+        let healthMonth = 0;
+        remainingSalary = salaryMonth + gemelEmployerAboveMonth;
+        previousLimit = 0;
+
+        for (const tier of settings.btlTiers) {
+          const salaryInTier = Math.min(
+            remainingSalary,
+            tier.limit - previousLimit
+          );
+          btlMonth += salaryInTier * tier.btl;
+          healthMonth += salaryInTier * tier.health;
+          remainingSalary -= salaryInTier;
+          if (remainingSalary <= 0) break;
+          previousLimit = tier.limit;
+        }
+
+        const netMonth =
+          salaryMonth -
+          taxMonth -
+          btlMonth -
+          healthMonth -
+          pensionEmployeeMonth -
+          gemelEmployeeMonth +
+          havraaMonth;
+
+        updateSalaryTable({
+          salaryMonth,
+          taxMonth,
+          btlMonth,
+          healthMonth,
+          pensionEmployeeMonth,
+          gemelEmployeeMonth,
+          havraaMonth,
+          netMonth,
+          yearsWorking,
+        });
+
+        updateSalaryInsights({
+          pointsChildrenYear,
+          pointsAdditionalYear,
+          pensionCreditYear,
+          settlementCreditYear,
+          btlChildrenTotal,
+          havraaMin,
+          havraaMax,
+          yearsWorking,
+        });
+
+        const months = yearsWorking * 12;
+
+        const regularPensionPercentage =
+          settings.pensionDeductionEmployee + settings.pensionDeductionEmployer;
+
+        const regularPensionDeposit =
+          Math.min(salaryMonth, settings.salaryAverageMonth) *
+          regularPensionPercentage;
+
+        let pensionBalance = calculateFutureValue({
+          currentBalance: pensionCurrent,
+          monthlyDeposit: regularPensionDeposit,
+          yearlyRoi: pensionRoi,
+          balanceFee: pensionBalanceFee,
+          depositFee: pensionDepositFee,
+          years: yearsWorking,
+        });
+
+        if (pensionType === "above") {
+          const generalPensionDeposit =
+            Math.max(0, salaryMonth - settings.salaryAverageMonth) *
+            regularPensionPercentage;
+
+          pensionBalance += calculateFutureValue({
+            monthlyDeposit: generalPensionDeposit,
+            yearlyRoi: pensionGeneralRoi,
+            balanceFee: pensionGeneralBalanceFee,
+            depositFee: pensionGeneralDepositFee,
+            years: yearsWorking,
+          });
+        }
+
+        const pensionCompensationDepositMonth =
+          salaryMonth * settings.pensionDeductionEmployerCompensation;
+        const regularCompensationDeposit = Math.min(
+          pensionCompensationDepositMonth,
+          settings.pensionCompensationMaxMonth
+        );
+        let pensionCompensationBalance = calculateFutureValue({
+          monthlyDeposit: regularCompensationDeposit,
+          yearlyRoi: pensionRoi,
+          balanceFee: pensionBalanceFee,
+          depositFee: pensionDepositFee,
+          years: yearsWorking,
+        });
+
+        const aboveCompensationDeposit = Math.max(
+          0,
+          pensionCompensationDepositMonth - settings.pensionCompensationMaxMonth
+        );
+
+        pensionCompensationBalance +=
+          calculateFutureValue({
+            monthlyDeposit: aboveCompensationDeposit,
+            yearlyRoi: pensionRoi,
+            balanceFee: pensionBalanceFee,
+            depositFee: pensionDepositFee,
+            years: yearsWorking,
+          }) *
+          (1 - settings.pensionCompensationAboveTax);
+
+        if (pensionCompensationType !== "onetime") {
+          pensionBalance += pensionCompensationBalance;
+          pensionCompensationBalance = 0;
+        }
+
+        const pensionRetirementMonth = Math.max(
+          pensionBalance / pensionMekadem,
+          pensionBalance / yearsRetirement / 12
+        );
+
+        // Calculate gemel balance
+        const gemelDepositMonth =
+          gemelType !== "none"
+            ? gemelType === "above"
+              ? salaryMonth *
+                (settings.gemelDeductionEmployee +
+                  settings.gemelDeductionEmployer)
+              : Math.min(
+                  salaryMonth * settings.gemelDeductionEmployee,
+                  settings.gemelMax / 12
+                ) +
+                Math.min(
+                  salaryMonth * settings.gemelDeductionEmployer,
+                  (settings.gemelMax / 12) * 3
+                )
+            : 0;
+
+        let gemelBalance = calculateFutureValue({
+          currentBalance: gemelCurrent,
+          monthlyDeposit: gemelDepositMonth,
+          yearlyRoi: gemelRoi,
+          balanceFee: gemelBalanceFee,
+          years: yearsWorking,
+        });
+
+        const ageRetireLegal = settings[gender].ageRetire;
+
+        let gemelTaxAtRetirement = 0;
+        const yearsInGemel = yearsWorking;
+        const hasReachedRetirementAge = ageRetire >= settings[gender].ageRetire;
+
+        if (
+          (hasReachedRetirementAge &&
+            yearsInGemel < settings.gemelMinRetirementYears) ||
+          (!hasReachedRetirementAge && yearsInGemel < settings.gemelMinYears)
+        ) {
+          let remainingGemelBalance = gemelBalance;
+          previousLimit = 0;
+
+          for (const tier of settings.taxYearTiers) {
+            const taxableInThisTier = Math.min(
+              remainingGemelBalance,
+              tier.limit - previousLimit
+            );
+            gemelTaxAtRetirement += taxableInThisTier * tier.rate;
+            remainingGemelBalance -= taxableInThisTier;
+            if (remainingGemelBalance <= 0) break;
+            previousLimit = tier.limit;
+          }
+
+          gemelBalance -= gemelTaxAtRetirement;
+        }
+
+        let btlZiknaTotal = 0;
+        for (let age = ageRetire; age < ageDeath; age++) {
+          if (age >= ageRetireLegal) {
+            const tier = settings.ziknaTiers.find((t) => age <= t.limit);
+            btlZiknaTotal += tier.amount * 12;
+          }
+        }
+
+        const btlZiknaYear = btlZiknaTotal / yearsRetirement;
+        const btlZiknaMonth = btlZiknaYear / 12;
+
+        updateRetirementTable({
+          pensionRetirementMonth,
+          pensionCompensationBalance,
+          btlZiknaMonth: btlZiknaMonth,
+          gemelBalance,
+          yearsRetirement,
+        });
+
+        updateRetirementInsights({
+          pensionEmployeeTotal: pensionEmployeeMonth * 12 * yearsWorking,
+          pensionBalance: pensionRetirementMonth * 12 * yearsRetirement,
+          pensionCompensationBalance,
+          pensionCurrent,
+          gemelEmployeeTotal: gemelEmployeeMonth * 12 * yearsWorking,
+          gemelBalance,
+          gemelCurrent,
+          btlEmployeeTotal: btlMonth * 12 * yearsWorking,
+          btlZiknaTotal,
+        });
+
+        let disabilityData = { show: false };
+
+        if (disabilityType !== "none") {
+          const disabilityPercentage = parseInt(disabilityType) / 100;
+          const pensionDisabilityMonth =
+            0.75 * salaryMonth * disabilityPercentage;
+
+          let btlDisabilityMonth = 0;
+          if (disabilityPercentage >= 0.6) {
+            const tier = settings.btlDisabilityTiers.find(
+              (t) => t.percentage <= disabilityPercentage * 100
+            );
+            if (tier) btlDisabilityMonth = tier.amount;
+          }
+
+          disabilityData = {
+            show: true,
+            pensionDisabilityMonth,
+            btlDisabilityMonth,
+            disabilityType,
+            yearsRetirement,
+          };
+        }
+
+        updateDisabilityTable(disabilityData);
+
+        const pensionDeathTier = settings.pensionDeathTiers.find(
+          (t) => ageStart <= t.age
+        ) || { percentage: settings.pensionDeathTiers[0].percentage };
+        const insuredSalary =
+          salaryMonth *
+          (pensionDeathTier?.percentage ||
+            settings.pensionDeathTiers[settings.pensionDeathTiers.length - 1]
+              .percentage);
+
+        const spouseAge =
+          gender === "man"
+            ? Math.max(settings.woman.ageDeath, ageDeath + 3)
+            : Math.max(settings.man.ageDeath, ageDeath + 3);
+        const spouseYears = spouseAge - ageDeath;
+
+        const youngestChildAge =
+          children > 0
+            ? Math.max(
+                0,
+                ageDeath - (ageStart + yearsBetweenChildren * (children - 1))
+              )
+            : 0;
+        const pensionChildrenYears =
+          children > 0 ? Math.max(0, 21 - youngestChildAge) : 0;
+        const btlChildrenYears =
+          children > 0 ? Math.max(0, 18 - youngestChildAge) : 0;
+
+        let pensionSpouseTotal = 0;
+        let pensionChildrenTotal = 0;
+        let btlDeathSpouseTotal = 0;
+        let btlDeathChildrenTotal = 0;
+
+        for (
+          let year = 0;
+          year < Math.max(spouseYears, pensionChildrenYears);
+          year++
+        ) {
+          const currentSpouseAge = ageDeath + year;
+          const youngestChildAgeNow = youngestChildAge + year;
+
+          if (year < spouseYears) {
+            pensionSpouseTotal +=
+              insuredSalary * settings.pensionDeathSpousePercentage * 12;
+          }
+
+          if (year < pensionChildrenYears) {
+            pensionChildrenTotal +=
+              insuredSalary * settings.pensionDeathChildrenPercentage * 12;
+          }
+
+          if (children === 0) {
+            const noChildrenTier = settings.btlDeathNoChildrenTiers.find(
+              (t) => currentSpouseAge <= t.age
+            );
+            btlDeathSpouseTotal += noChildrenTier.amount * 12;
+          } else {
+            const activeChildren = Math.min(
+              children,
+              Math.max(0, Math.ceil(18 - youngestChildAgeNow))
+            );
+
+            if (activeChildren > 0) {
+              const childTier = settings.btlDeathChildrenTiers.find(
+                (t) => activeChildren <= t.child
+              );
+              if (childTier) {
+                btlDeathChildrenTotal += childTier.amount * 12;
+              } else {
+                btlDeathChildrenTotal +=
+                  (settings.btlDeathChildrenTiers[1].amount +
+                    (activeChildren - 2) *
+                      settings.btlDeathChildrenTiers[2].amount) *
+                  12;
+              }
+            } else {
+              const noChildrenTier = settings.btlDeathNoChildrenTiers.find(
+                (t) => currentSpouseAge <= t.age
+              );
+              btlDeathSpouseTotal += noChildrenTier.amount * 12;
+            }
+          }
+        }
+
+        const pensionDeathSpouseMonth = pensionSpouseTotal / (12 * spouseYears);
+        const pensionDeathChildrenMonth =
+          pensionChildrenYears > 0
+            ? pensionChildrenTotal / (12 * pensionChildrenYears)
+            : 0;
+        const btlDeathSpouseMonth = btlDeathSpouseTotal / (12 * spouseYears);
+        const btlDeathChildrenMonth =
+          pensionChildrenYears > 0
+            ? btlDeathChildrenTotal / (12 * pensionChildrenYears)
+            : 0;
+        const btlDeathMonth = btlDeathSpouseMonth + btlDeathChildrenMonth;
+
+        const tbody = document.querySelector("#deathTable tbody");
+        tbody.innerHTML = "";
+
+        [
+          {
+            label: "פנסיה",
+            monthly: pensionDeathSpouseMonth + pensionDeathChildrenMonth,
+            yearly: (pensionDeathSpouseMonth + pensionDeathChildrenMonth) * 12,
+            total: pensionSpouseTotal + pensionChildrenTotal,
+          },
+          {
+            label: "ביטוח לאומי",
+            monthly: btlDeathMonth,
+            yearly: btlDeathMonth * 12,
+            total: btlDeathSpouseTotal + btlDeathChildrenTotal,
+          },
+          {
+            label: "נטו",
+            monthly:
+              pensionDeathSpouseMonth +
+              pensionDeathChildrenMonth +
+              btlDeathMonth,
+            yearly:
+              (pensionDeathSpouseMonth +
+                pensionDeathChildrenMonth +
+                btlDeathMonth) *
+              12,
+            total:
+              pensionSpouseTotal +
+              pensionChildrenTotal +
+              btlDeathSpouseTotal +
+              btlDeathChildrenTotal,
+            bold: true,
+          },
+        ].forEach((row) => {
+          const tr = tbody.insertRow();
+          if (row.bold) tr.style.fontWeight = "bold";
+
+          tr.insertCell().textContent = row.label;
+          tr.insertCell().textContent = formatNumber(row.monthly);
+          tr.insertCell().textContent = formatNumber(row.yearly);
+          tr.insertCell().textContent = formatNumber(row.total);
+        });
+
+        const deathInsights = document.createElement("div");
+        deathInsights.className = "death-insights";
+        deathInsights.style.padding = "2px 8px";
+        deathInsights.style.backgroundColor = "var(--insights-bg, #f5f5f5)";
+
+        let insightsHTML = `
+          <p>בן/בת הזוג יקבלו מהפנסיה ${formatNumber(
+            pensionSpouseTotal / (12 * spouseYears)
+          )} בחודש ${formatNumber(
+          pensionSpouseTotal / spouseYears
+        )} לשנה או ${formatNumber(
+          pensionSpouseTotal
+        )} ₪ סה"כ ב-${spouseYears} שנים</p>
+          <p>בן/בת הזוג יקבלו מביטוח לאומי ${formatNumber(
+            btlDeathSpouseTotal / (12 * spouseYears)
+          )} בחודש, ${formatNumber(
+          btlDeathSpouseTotal / spouseYears
+        )} לשנה או ${formatNumber(
+          btlDeathSpouseTotal
+        )} ₪ סה"כ ב-${spouseYears} שנים</p>
+        `;
+
+        if (children > 0) {
+          if (pensionChildrenYears > 0) {
+            insightsHTML += `
+              <p>הילדים שלך יקבלו מהפנסיה ${formatNumber(
+                pensionChildrenTotal / (12 * pensionChildrenYears)
+              )} בחודש, ${formatNumber(
+              pensionChildrenTotal / pensionChildrenYears
+            )} לשנה ו-${formatNumber(
+              pensionChildrenTotal
+            )} ₪ סה"כ עד לגיל 21</p>
+            `;
+          }
+          if (btlChildrenYears > 0) {
+            insightsHTML += `
+              <p>הילדים שלך יקבלו מביטוח לאומי ${formatNumber(
+                btlDeathChildrenTotal / (12 * btlChildrenYears)
+              )} בחודש, ${formatNumber(
+              btlDeathChildrenTotal / btlChildrenYears
+            )} לשנה ו-${formatNumber(
+              btlDeathChildrenTotal
+            )} ₪ סה"כ עד לגיל 18</p>
+            `;
+          }
+        }
+
+        deathInsights.innerHTML = insightsHTML;
+
+        const existingDeathTable = document.getElementById("deathTable");
+        const existingDeathInsights = document.querySelector(".death-insights");
+        const retirementInsights = document.querySelector(
+          ".retirement-insights"
+        );
+
+        if (existingDeathTable) {
+          existingDeathTable.replaceWith(deathTable);
+        } else {
+          const insertAfter =
+            document.getElementById("disabilityTable") || retirementInsights;
+          insertAfter.after(deathTable);
+        }
+
+        if (existingDeathInsights) {
+          existingDeathInsights.replaceWith(deathInsights);
+        } else {
+          deathTable.after(deathInsights);
+        }
+      }
+
+      function formatNumber(num) {
+        return (
+          Math.floor(Math.abs(num)).toLocaleString("he-IL") +
+          (num < 0 ? "-" : "")
+        );
+      }
+
+      function updateSalaryTable(data) {
+        const tbody = document.querySelector("#salaryTable tbody");
+        tbody.innerHTML = "";
+
+        [
+          { label: "ברוטו", value: data.salaryMonth },
+          { label: "מס הכנסה", value: -data.taxMonth },
+          { label: "ביטוח לאומי", value: -data.btlMonth },
+          { label: "מס בריאות", value: -data.healthMonth },
+          { label: "הפרשות לפנסיה", value: -data.pensionEmployeeMonth },
+          { label: "הפרשות לקרן השתלמות", value: -data.gemelEmployeeMonth },
+          { label: "דמי הבראה", value: data.havraaMonth },
+          { label: "נטו", value: data.netMonth },
+        ].forEach((row) => {
+          const tr = tbody.insertRow();
+          if (row.label === "נטו") tr.style.fontWeight = "bold";
+
+          tr.insertCell().textContent = row.label;
+          tr.insertCell().textContent = formatNumber(row.value);
+          tr.insertCell().textContent = formatNumber(row.value * 12);
+          tr.insertCell().textContent = formatNumber(
+            row.value * 12 * data.yearsWorking
+          );
+        });
+      }
+
+      function updateSalaryInsights({
+        pointsChildrenYear,
+        pointsAdditionalYear,
+        pensionCreditYear,
+        settlementCreditYear,
+        btlChildrenTotal,
+        havraaMin,
+        havraaMax,
+        yearsWorking,
+      }) {
+        const salaryInsightsDiv = document.createElement("div");
+        salaryInsightsDiv.className = "salary-insights";
+        salaryInsightsDiv.style.padding = "2px 8px";
+        salaryInsightsDiv.style.backgroundColor = "var(--insights-bg, #f5f5f5)";
+
+        let salaryInsights = "";
+
+        const childrenSaveMonth =
+          (pointsChildrenYear * settings.pointValue) / 12;
+        const additionalPointsSaveMonth =
+          (pointsAdditionalYear * settings.pointValue) / 12;
+        const pensionCreditMonth = pensionCreditYear / 12;
+        const settlementCreditMonth = settlementCreditYear / 12;
+        const btlChildrenMonth = btlChildrenTotal / (yearsWorking * 12);
+
+        if (childrenSaveMonth > 0) {
+          salaryInsights += `<p>ילדים חסכו לך מס של ${formatNumber(
+            childrenSaveMonth
+          )} בחודש, ${formatNumber(
+            childrenSaveMonth * 12
+          )} בשנה ו-${formatNumber(
+            childrenSaveMonth * 12 * yearsWorking
+          )} ₪ סה"כ</p>`;
+        }
+
+        if (btlChildrenMonth > 0) {
+          salaryInsights += `<p>בנוסף, ביטוח לאומי שילם לך קצבת ילדים של ${formatNumber(
+            btlChildrenMonth
+          )} בחודש, ${formatNumber(
+            btlChildrenMonth * 12
+          )} בשנה ו-${formatNumber(btlChildrenTotal)} ₪ סה"כ</p>`;
+        }
+
+        if (pensionCreditMonth > 0) {
+          salaryInsights += `<p>הפרשה לפנסיה חסכה לך מס של ${formatNumber(
+            pensionCreditMonth
+          )} בחודש, ${formatNumber(
+            pensionCreditMonth * 12
+          )} בשנה ו-${formatNumber(
+            pensionCreditMonth * 12 * yearsWorking
+          )} ₪ סה"כ</p>`;
+        }
+
+        if (settlementCreditMonth > 0) {
+          salaryInsights += `<p>יישוב מזכה חסך לך מס של ${formatNumber(
+            settlementCreditMonth
+          )} בחודש, ${formatNumber(
+            settlementCreditMonth * 12
+          )} בשנה ו-${formatNumber(
+            settlementCreditMonth * 12 * yearsWorking
+          )} ₪ סה"כ</p>`;
+        }
+
+        if (additionalPointsSaveMonth > 0) {
+          salaryInsights += `<p>נקודות זיכוי נוספות חסכו לך מס של ${formatNumber(
+            additionalPointsSaveMonth
+          )} בחודש, ${formatNumber(
+            additionalPointsSaveMonth * 12
+          )} בשנה ו-${formatNumber(
+            additionalPointsSaveMonth * 12 * yearsWorking
+          )} ₪ סה"כ</p>`;
+        }
+
+        salaryInsights += `<p>דמי הבראה משולמים לרוב שנתית ועולים בהתאם לוותק במקום העבודה, מ-${formatNumber(
+          havraaMin
+        )} ל-${formatNumber(havraaMax)} ₪ בשנה</p>`;
+
+        if (salaryInsights) {
+          salaryInsightsDiv.innerHTML = salaryInsights;
+          const existingSalaryInsights =
+            document.querySelector(".salary-insights");
+          if (existingSalaryInsights) {
+            existingSalaryInsights.replaceWith(salaryInsightsDiv);
+          } else {
+            document.getElementById("salaryTable").after(salaryInsightsDiv);
+          }
+        }
+      }
+
+      function updateRetirementTable(data) {
+        const tbody = document.querySelector("#retirementTable tbody");
+        tbody.innerHTML = "";
+
+        [
+          {
+            label: "פנסיה",
+            oneTime: data.pensionCompensationBalance,
+            monthly: data.pensionRetirementMonth,
+          },
+          {
+            label: "קרן השתלמות",
+            oneTime: data.gemelBalance,
+            monthly: 0,
+          },
+          {
+            label: "קצבה זקנה",
+            oneTime: 0,
+            monthly: data.btlZiknaMonth,
+          },
+          {
+            label: "נטו",
+            oneTime: data.pensionCompensationBalance + data.gemelBalance,
+            monthly: data.pensionRetirementMonth + data.btlZiknaMonth,
+            bold: true,
+          },
+        ].forEach((row) => {
+          const tr = tbody.insertRow();
+          if (row.bold) tr.style.fontWeight = "bold";
+
+          tr.insertCell().textContent = row.label;
+          tr.insertCell().textContent = formatNumber(row.oneTime);
+          tr.insertCell().textContent = formatNumber(row.monthly);
+          tr.insertCell().textContent = formatNumber(row.monthly * 12);
+          tr.insertCell().textContent = formatNumber(
+            row.monthly * 12 * data.yearsRetirement
+          );
+        });
+      }
+
+      function updateRetirementInsights({
+        pensionEmployeeTotal,
+        pensionBalance,
+        pensionCompensationBalance,
+        pensionCurrent,
+        gemelEmployeeTotal,
+        gemelBalance,
+        gemelCurrent,
+        btlEmployeeTotal,
+        btlZiknaTotal,
+      }) {
+        if (pensionCurrent > 0 || gemelCurrent > 0) {
+          const existingRetirementInsights = document.querySelector(
+            ".retirement-insights"
+          );
+          if (existingRetirementInsights) {
+            existingRetirementInsights.remove();
+          }
+          return;
+        }
+
+        const retirementInsightsDiv = document.createElement("div");
+        retirementInsightsDiv.className = "retirement-insights";
+        retirementInsightsDiv.style.padding = "2px 8px";
+        retirementInsightsDiv.style.backgroundColor =
+          "var(--insights-bg, #f5f5f5)";
+
+        let retirementInsights = "";
+
+        retirementInsights += `<p>הפרשה של ${formatNumber(
+          pensionEmployeeTotal
+        )} לפנסיה הפכה ל-${formatNumber(
+          pensionBalance + pensionCompensationBalance
+        )} ₪</p>`;
+        if (gemelBalance > 0) {
+          retirementInsights += `<p>הפרשה של ${formatNumber(
+            gemelEmployeeTotal
+          )} לקרן השתלמות הפכה ל-${formatNumber(gemelBalance)} ₪</p>`;
+        }
+        retirementInsights += `<p>הפרשה של ${formatNumber(
+          btlEmployeeTotal
+        )} לביטוח לאומי הפכה ל-${formatNumber(btlZiknaTotal)} ₪</p>`;
+
+        retirementInsightsDiv.innerHTML = retirementInsights;
+        const existingRetirementInsights = document.querySelector(
+          ".retirement-insights"
+        );
+        if (existingRetirementInsights) {
+          existingRetirementInsights.replaceWith(retirementInsightsDiv);
+        } else {
+          document
+            .getElementById("retirementTable")
+            .after(retirementInsightsDiv);
+        }
+      }
+
+      function updateDisabilityTable(data) {
+        const existingTable = document.getElementById("disabilityTable");
+
+        if (!data.show) {
+          if (existingTable) existingTable.remove();
+          return;
+        }
+
+        let table = existingTable;
+        if (!table) {
+          table = document.createElement("table");
+          table.id = "disabilityTable";
+          document.querySelector(".retirement-insights").after(table);
+        }
+
+        table.innerHTML = `
+          <thead>
+            <tr>
+              <th>קצבת נכות</th>
+              <th>חודשית</th>
+              <th>שנתית</th>
+              <th>עד המוות</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>פנסיה</td>
+              <td>${formatNumber(data.pensionDisabilityMonth)}</td>
+              <td>${formatNumber(data.pensionDisabilityMonth * 12)}</td>
+              <td>${formatNumber(
+                data.pensionDisabilityMonth * 12 * data.yearsRetirement
+              )}</td>
+            </tr>
+            <tr>
+              <td>ביטוח לאומי</td>
+              <td>${formatNumber(data.btlDisabilityMonth)}</td>
+              <td>${formatNumber(data.btlDisabilityMonth * 12)}</td>
+              <td>${formatNumber(
+                data.btlDisabilityMonth * 12 * data.yearsRetirement
+              )}</td>
+            </tr>
+            <tr style="font-weight: bold;">
+              <td>נטו</td>
+              <td>${formatNumber(
+                data.pensionDisabilityMonth + data.btlDisabilityMonth
+              )}</td>
+              <td>${formatNumber(
+                (data.pensionDisabilityMonth + data.btlDisabilityMonth) * 12
+              )}</td>
+              <td>${formatNumber(
+                (data.pensionDisabilityMonth + data.btlDisabilityMonth) *
+                  12 *
+                  data.yearsRetirement
+              )}</td>
+            </tr>
+          </tbody>
+        `;
+      }
+
+      document
+        .querySelectorAll('.marker input[type="text"]')
+        .forEach((input) => {
+          const slider = input
+            .closest(".slider-container")
+            .querySelector(".range-slider");
+          const marker = input.closest(".marker");
+
+          input.addEventListener("focus", () => {
+            input.select();
+          });
+
+          input.addEventListener("blur", () => {
+            trackEvent(`${input.id}_type`);
+
+            let value = input.value.replace(/,/g, "");
+            value = parseInt(value) || slider.min;
+            value = Math.max(slider.min, Math.min(slider.max, value));
+
+            slider.value = value;
+            input.value =
+              slider.id === "salaryRange"
+                ? value.toLocaleString("he-IL")
+                : value;
+
+            const percent =
+              ((value - slider.min) / (slider.max - slider.min)) * 100;
+            marker.style.right = `${percent}%`;
+
+            updateCalculations();
+          });
+
+          input.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              input.blur();
+            }
+          });
+        });
+
+      document.querySelectorAll(".range-slider").forEach((slider) => {
+        const marker = slider.nextElementSibling;
+        const input = marker.querySelector('input[type="text"]');
+
+        ["input", "change"].forEach((eventType) => {
+          slider.addEventListener(eventType, () => {
+            const value =
+              slider.id === "salaryRange"
+                ? parseInt(slider.value).toLocaleString("he-IL")
+                : slider.value;
+            if (input) {
+              input.value = value;
+            }
+
+            if (eventType === "change") {
+              updateCalculations();
+            }
+          });
+        });
+      });
+
+      document
+        .querySelectorAll(".setting-input-container")
+        .forEach((container) => {
+          const slider = container.querySelector('input[type="range"]');
+          const input = container.querySelector('input[type="text"]');
+
+          slider.addEventListener("input", () => {
+            let value = slider.value;
+            if (
+              ![
+                "pensionCurrent",
+                "gemelCurrent",
+                "pensionMekadem",
+                "pointsAdditionalYear",
+              ].includes(slider.id)
+            ) {
+              value += "%";
+            }
+            input.value = value;
+          });
+
+          input.addEventListener("focus", () => {
+            input.select();
+          });
+
+          input.addEventListener("blur", () => {
+            trackEvent(`${input.id}_type`);
+
+            let value = input.value.replace(/[%,]/g, "");
+            value = parseFloat(value) || slider.min;
+            value = Math.max(slider.min, Math.min(slider.max, value));
+
+            slider.value = value;
+            input.value = value;
+            if (
+              ![
+                "pensionCurrent",
+                "gemelCurrent",
+                "pensionMekadem",
+                "pointsAdditionalYear",
+              ].includes(slider.id)
+            ) {
+              input.value += "%";
+            }
+
+            updateCalculations();
+          });
+
+          input.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              input.blur();
+            }
+          });
+        });
+
+      function prepareForExport() {
+        const h1 = document.querySelector("h1");
+        const h2 = document.querySelector("h2");
+        const advancedSettings = document.querySelector(".advanced-settings");
+        const footer = document.querySelector("footer");
+        const body = document.body;
+
+        const originals = {
+          h1Style: h1.style.cssText,
+          h2Text: h2.textContent,
+          h2Style: h2.style.cssText,
+          advancedHTML: advancedSettings.outerHTML,
+          footerDisplay: footer.style.display,
+          bodyStyle: body.style.cssText,
+          bodyWidth: body.offsetWidth,
+          bodyMaxWidth: window.getComputedStyle(body).maxWidth,
+        };
+
+        h1.style.textAlign = "center";
+        h1.style.margin = "0 0 10px 0";
+
+        h2.textContent = "https://calc.lugassy.net";
+        h2.style.textAlign = "center";
+
+        document.querySelector("h3").style.display = "none";
+
+        body.style.width = "1024px";
+        body.style.margin = "20px auto";
+        body.style.padding = "0 20px";
+        body.style.boxSizing = "border-box";
+
+        const settings = [];
+        document.querySelectorAll(".setting").forEach((setting) => {
+          const label = setting.querySelector("label").textContent;
+          let value = setting.querySelector("select")
+            ? setting.querySelector("select").options[
+                setting.querySelector("select").selectedIndex
+              ].text
+            : setting.querySelector('input[type="text"]').value;
+          settings.push(`${label} <strong>${value}</strong>`);
+        });
+
+        settings.push(footer.querySelector("p").textContent.trim());
+
+        const settingsContainer = document.createElement("div");
+        settingsContainer.className = "settings-container";
+        settingsContainer.style.cssText = `
+          text-align: right;
+          margin: 10px 0;
+          line-height: 1.5;
+          max-width: 100%;
+          overflow-wrap: break-word;
+          color: inherit;
+        `;
+        settingsContainer.innerHTML = settings.join(" • ");
+        advancedSettings.replaceWith(settingsContainer);
+
+        document.querySelector(".export-buttons").style.display = "none";
+        footer.style.display = "none";
+
+        return () => {
+          h1.style.cssText = originals.h1Style;
+          h2.textContent = originals.h2Text;
+          h2.style.cssText = originals.h2Style;
+          document.querySelector("h3").style.display = "";
+          settingsContainer.replaceWith(advancedSettings);
+          document.querySelector(".export-buttons").style.display = "";
+          footer.style.display = originals.footerDisplay;
+          body.style.cssText = originals.bodyStyle;
+
+          body.style.width = "";
+          body.style.maxWidth = originals.bodyMaxWidth;
+
+          window.dispatchEvent(new Event("resize"));
+        };
+      }
+
+      function exportToPNG() {
+        const cleanup = prepareForExport();
+        const mainContent = document.querySelector("body");
+
+        window.dispatchEvent(new Event("resize"));
+        setTimeout(() => {
+          html2canvas(mainContent, {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            allowTaint: true,
+            backgroundColor: window.matchMedia("(prefers-color-scheme: dark)")
+              .matches
+              ? "#000000"
+              : "#ffffff",
+            width: 1024,
+            windowWidth: 1024,
+          }).then((canvas) => {
+            cleanup();
+            const link = document.createElement("a");
+            link.download = `${getExportFilename()}.png`;
+            link.href = canvas.toDataURL("image/png", 0.9);
+            link.click();
+          });
+
+          trackEvent("image_export");
+        }, 100);
+      }
+
+      function getExportFilename() {
+        const gender = document.querySelector(
+          'input[name="gender"]:checked'
+        ).value;
+        const children = document.getElementById("childrenRange").value;
+        const salary = document.getElementById("salaryRange").value;
+        const ageStart = document.getElementById("ageStartRange").value;
+        const ageRetire = document.getElementById("ageRetireRange").value;
+        const ageDeath = document.getElementById("ageDeathRange").value;
+
+        return `calc_${gender}_${children}_${salary}_${ageStart}-${ageRetire}-${ageDeath}`;
+      }
+
+      function addResizeListener() {
+        window.addEventListener("resize", () => {
+          updateAgeMarkers();
+
+          const childrenSlider = document.getElementById("childrenRange");
+          const salarySlider = document.getElementById("salaryRange");
+          const childrenMarker = childrenSlider.nextElementSibling;
+          const salaryMarker = salarySlider.nextElementSibling;
+
+          updateSliderMarker(childrenSlider, childrenMarker);
+          updateSliderMarker(salarySlider, salaryMarker);
+        });
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        updateAgeMarkers();
+        updateCalculations();
+        addResizeListener();
+
+        document
+          .querySelector(".advanced-settings")
+          .addEventListener("click", () => {
+            trackEvent("settings_click");
+          });
+        document
+          .querySelector("footer a[href*='linkedin']")
+          .addEventListener("click", () => {
+            trackEvent("linkedin_click");
+          });
+        document
+          .querySelector("footer a[href*='aliexpress']")
+          .addEventListener("click", () => {
+            trackEvent("aliexpress_click");
+          });
+      });
+    </script>
+    <footer>
+      <p>
+        ט.ל.ח &bull; גירסה 1.2.1 &copy; מאת
+        <a href="https://www.linkedin.com/in/mluggy/" target="_blank"
+          >מיכאל לוגסי</a
+        >
+      </p>
+      <p>
+        החיים קצרים ❤️
+        <a href="https://s.click.aliexpress.com/e/_omTZwTp" target="_blank"
+          >תקנו לכם משהו</a
+        >
+        ותמכו בדף
+      </p>
+    </footer>
+  </body>
+</html>
