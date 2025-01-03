@@ -1560,11 +1560,11 @@
             : 0;
 
         let taxYear = 0;
-        let remainingSalary =
-          salaryYear +
+        let salaryYearForTax = salaryYear +
           pensionEmployerAboveMonth * 12 +
           pensionCompensationAboveYear +
           gemelEmployerAboveMonth * 12;
+        let remainingSalary = salaryYearForTax;
         let previousLimit = 0;
 
         for (const tier of settings.taxYearTiers) {
@@ -1638,7 +1638,7 @@
 
         let btlMonth = 0;
         let healthMonth = 0;
-        remainingSalary = salaryMonth + gemelEmployerAboveMonth;
+        remainingSalary = salaryYearForTax/12;
         previousLimit = 0;
 
         for (const tier of settings.btlTiers) {
@@ -1661,9 +1661,10 @@
           pensionEmployeeMonth -
           gemelEmployeeMonth +
           havraaMonth;
-
+        const salaryMonthForTax = salaryYearForTax / 12;
         updateSalaryTable({
           salaryMonth,
+          salaryMonthForTax,
           taxMonth,
           btlMonth,
           healthMonth,
@@ -2088,6 +2089,7 @@
 
         [
           { label: "ברוטו", value: data.salaryMonth },
+          { label: "ברוטו שווי למס", value: data.salaryMonthForTax },
           { label: "מס הכנסה", value: -data.taxMonth },
           { label: "ביטוח לאומי", value: -data.btlMonth },
           { label: "מס בריאות", value: -data.healthMonth },
