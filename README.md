@@ -1,4 +1,4 @@
-Welcome to the Calc application! This application is designed to help you calculate your net income from your gross salary, while also providing insights into tax deductions, pension contributions, and education fund contributions over time. It can project how much of your contributions will be returned to you in cases of retirement, disability, or to your heirs in the event of death.
+This application helps calculate your net income from your gross salary, while also providing insights into tax deductions, pension contributions, and education fund contributions over time. It can project how much of your contributions will be returned to you in cases of retirement, disability, or to your heirs in the event of death.
 
 # Website
 
@@ -59,10 +59,11 @@ Visit the Calc application online at https://calc.lugassy.net.
 
 ## Version 1.2.0
 * Add current age, pension, and/or education fund values for economic independence calculations.
-* Version 1.2.1
+
+# Version 1.2.1
 * Employer contributions to pension above 2,351 NIS/month taxed.
 * Employer contributions to severance pay above 41,500 NIS/month taxed.
-
+* Updated list of preferred settlments.
 
 # Getting Started
-To get started, visit https://calc.lugassy.net and explore the application to manage your financial projections effectively.
+Visit https://calc.lugassy.net and explore to manage your financial projections effectively.
